@@ -4,7 +4,11 @@ if(! isset($from_cart)){
     echo json_encode($result, JSON_UNESCAPED_UNICODE);
     exit;
 }
-
+if($body===null){
+    $result['error'] = '輸入的json格式錯誤';
+    echo json_encode($result, JSON_UNESCAPED_UNICODE);
+    exit;
+}
 // 需要兩個參數: sid(必要), qty(如果沒有就是預設的1)
 
 if(empty($body['sid'])){
@@ -14,6 +18,13 @@ if(empty($body['sid'])){
 }
 $sid = $body['sid'];
 $qty = empty($body['qty']) ? 1 : intval($body['qty']);
+
+//之前有設定，就不再設定
+if(isset($_SESSION['cart'][$sid])){
+    $result['error'] = '該產品先前已加入購物車';
+    echo json_encode($result, JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
 //資料庫裡有沒有這個產品，而且產品必須是要上架的狀態
 $sql = "SELECT * FROM `products` WHERE `sid`=? AND `on_sale`=1";
