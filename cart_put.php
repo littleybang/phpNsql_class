@@ -17,35 +17,26 @@ if(empty($body['sid'])){
     exit;
 }
 $sid = $body['sid'];
-$qty = empty($body['qty']) ? 1 : intval($body['qty']);
+$qty = empty($body['qty']) ? 0 : intval($body['qty']);
 
-//之前有設定，就不再設定
-if(isset($_SESSION['cart'][$sid])){
-    $result['error'] = '該產品先前已加入購物車';
-    $result['resultCode'] = 410;
+//之前沒有設定的話，就回報錯誤
+if(! isset($_SESSION['cart'][$sid])){
+    $result['error'] = '沒有該產品在購物車中';
+    $result['resultCode'] = 420;
     $result['cart'] = $_SESSION['cart'];
     echo json_encode($result, JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-//資料庫裡有沒有這個產品，而且產品必須是要上架的狀態
-$sql = "SELECT * FROM `products` WHERE `sid`=? AND `on_sale`=1";
-$stmt = $pdo->prepare($sql);
-$stmt->execute([$sid]);
-
-if($stmt->rowCount()!=1){
-    $result['error'] = '沒有這個產品';
-    echo json_encode($result, JSON_UNESCAPED_UNICODE);
-    exit;
+if($qty<=0){
+    unset($_SESSION['cart'][$sid]); //刪除項目
+}else{
+    $_SESSION['cart'][$sid] = $qty;  //變更數量
 }
-//加入購物車
-$_SESSION['cart'][$sid] = $qty;
 
 $result['success'] = true;
 $result['resultCode'] = 200;
 $result['cart'] = $_SESSION['cart'];
-
-
 
 echo json_encode($result, JSON_UNESCAPED_UNICODE);
 
