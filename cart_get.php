@@ -7,22 +7,34 @@ if(! isset($from_cart)){
 
 $keys = array_keys($_SESSION['cart']);
 
-$sql = sprintf("SELECT * FROM products WHERE sid IN (%s)",
-        implode(',', $keys)
-    );
-//echo $sql;
-//exit;
-$stmt = $pdo->query($sql);
+//購物車裡面要有商品才
+if(! empty($keys)){
 
-$result = [
-    'success' => true,
-    'resultCode' => 200,
-    'error' => '',
-    'method' => $method,
-    'cart' => $_SESSION['cart'],
-    'cartProducts' => $stmt->fetchAll(PDO::FETCH_ASSOC),
-];
+    $sql = sprintf("SELECT * FROM products WHERE sid IN (%s)",
+            implode(',', $keys)
+        );
+    //echo $sql;
+    //exit;
+    $stmt = $pdo->query($sql);
 
+    $result = [
+        'success' => true,
+        'resultCode' => 200,
+        'error' => '',
+        'method' => $method,
+        'cart' => $_SESSION['cart'],
+        'cartProducts' => $stmt->fetchAll(PDO::FETCH_ASSOC),
+    ];
+}else{
+    $result = [
+        'success' => true,
+        'resultCode' => 200,
+        'error' => '',
+        'method' => $method,
+        'cart' => $_SESSION['cart'],
+        'cartProducts' => [],
+    ];
+}
 
 
 echo json_encode($result, JSON_UNESCAPED_UNICODE);
