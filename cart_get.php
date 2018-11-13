@@ -7,7 +7,7 @@ if(! isset($from_cart)){
 
 $keys = array_keys($_SESSION['cart']);
 
-//購物車裡面要有商品才
+//購物車裡面要有商品才可找到產品資料，沒有的話就回傳空陣列
 if(! empty($keys)){
 
     $sql = sprintf("SELECT * FROM products WHERE sid IN (%s)",
@@ -23,6 +23,7 @@ if(! empty($keys)){
         'error' => '',
         'method' => $method,
         'cart' => $_SESSION['cart'],
+        'sequence' => $keys, //索引式陣列可以保有原本的順序
         'cartProducts' => $stmt->fetchAll(PDO::FETCH_ASSOC),
     ];
 }else{
@@ -38,14 +39,6 @@ if(! empty($keys)){
 
 
 echo json_encode($result, JSON_UNESCAPED_UNICODE);
-
-
-
-
-
-
-
-
 
 
 
