@@ -46,16 +46,13 @@ $p_stmt = $pdo->query($p_sql);
 //}
 
 //**作法二
+$total_price = 0; //總價
 $products = [];
 while($r = $p_stmt->fetch(PDO::FETCH_ASSOC)){
     $r['qty'] = $_SESSION['cart'][$r['sid']];
     $products[$r['sid']] = $r;
+    $total_price += $r['price'] * $r['qty'];
 }
-print_r($products);
-
-
-exit;
-
 
 // 寫入訂單 (資料表: orders)
 $o_sql = "INSERT INTO `orders`(
@@ -67,14 +64,28 @@ $o_stmt->execute([
     $total_price,
 ]);
 
-echo $o_stmt->rowCount(). "\n";
+$o_sid = $pdo->lastInsertId(); //立刻取得訂單編號
 
-echo $pdo->lastInsertId();
+//寫入訂單(資料表: order_details)
+$d_sql = "INSERT INTO `order_details`(
+        `order_sid`, `product_sid`, `price`, `quantity`
+        ) VALUES (?, ?, ?, ?)";
+$d_stmt = $pdo->prepare($d_sql);
 
+foreach($keys as $sid){
+    $d_stmt->execute([
+        $o_sid,
+        $sid,
+        $products[$sid]['price'],
+        $products[$sid]['qty'],
+    ]);
+}
 
-
-
-
-
-
+$result = [
+    'success' => true,
+    'resultCode' => 200,
+    'errorMsg' => '',
+];
+unset($_SESSION['cart']);  //清空購物車
+echo json_encode($result, JSON_UNESCAPED_UNICODE);
 
